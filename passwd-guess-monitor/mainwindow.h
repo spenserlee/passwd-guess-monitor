@@ -1,8 +1,12 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#define LOG_MONITOR_LOGFILE "log-monitor.log"
+
 #include <QMainWindow>
+#include <QCloseEvent>
 #include <QDir>
+#include <QFile>
 #include <QProcess>
 #include <QDebug>
 
@@ -16,6 +20,7 @@ class MainWindow : public QMainWindow
 
 public:
     explicit MainWindow(QWidget *parent = 0);
+    void closeEvent(QCloseEvent *event);
     ~MainWindow();
 
 private slots:
@@ -34,6 +39,9 @@ private slots:
 
     void on_blockMins_valueChanged(int arg1);
 
+    bool fileExists(QString path);
+
+    void on_stopBtn_clicked();
 
 private:
     Ui::MainWindow *ui;

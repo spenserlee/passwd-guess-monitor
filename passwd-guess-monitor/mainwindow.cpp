@@ -14,6 +14,11 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+
+}
+
 void MainWindow::initUi()
 {
     ui->infoTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
@@ -53,6 +58,27 @@ void MainWindow::on_startBtn_clicked()
     logMonitor->startDetached(command);
 
     delete logMonitor;
+}
+
+void MainWindow::on_stopBtn_clicked()
+{
+    if (fileExists(LOG_MONITOR_LOGFILE))
+    {
+        QFile f(LOG_MONITOR_LOGFILE);
+        if (f.open(QIODevice::ReadOnly | QIODevice::Text))
+        {
+            int oldPid = f.readAll().toInt();
+            QProcess::execute(QString("kill " + QString::number(oldPid)));
+        }
+        f.close();
+    }
+}
+
+bool MainWindow::fileExists(QString path)
+{
+    QFileInfo check_file(path);
+    // check if file exists and if yes: Is it really a file and no directory?
+    return check_file.exists() && check_file.isFile();
 }
 
 void MainWindow::on_resetHrs_valueChanged(int arg1)

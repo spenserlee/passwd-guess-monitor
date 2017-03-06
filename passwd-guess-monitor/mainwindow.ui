@@ -15,34 +15,7 @@
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QGridLayout" name="gridLayout_2">
-    <item row="1" column="0">
-     <spacer name="horizontalSpacer">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>795</width>
-        <height>20</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
-    <item row="4" column="0">
-     <widget class="QPushButton" name="startBtn">
-      <property name="text">
-       <string>Start Log Monitor</string>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="0">
-     <widget class="QPushButton" name="unblockBtn">
-      <property name="text">
-       <string>Unblock All IPs</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="0">
+    <item row="0" column="0" colspan="2">
      <widget class="QGroupBox" name="groupBox">
       <property name="title">
        <string>Monitoring Settings</string>
@@ -141,7 +114,20 @@
       </layout>
      </widget>
     </item>
-    <item row="2" column="0">
+    <item row="1" column="0" colspan="2">
+     <spacer name="horizontalSpacer">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>795</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item row="2" column="0" colspan="2">
      <widget class="QTableWidget" name="infoTable">
       <property name="alternatingRowColors">
        <bool>true</bool>
@@ -179,6 +165,36 @@
       </column>
      </widget>
     </item>
+    <item row="3" column="0">
+     <widget class="QPushButton" name="startBtn">
+      <property name="autoFillBackground">
+       <bool>false</bool>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QPushButton { background-color: rgb(78, 154, 6); color: black;}</string>
+      </property>
+      <property name="text">
+       <string>Start Log Monitor Daemon</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="1">
+     <widget class="QPushButton" name="stopBtn">
+      <property name="styleSheet">
+       <string notr="true">QPushButton { background-color: rgb(204, 0, 0); color: white;}</string>
+      </property>
+      <property name="text">
+       <string>Stop Log Monitor Daemon</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="0" colspan="2">
+     <widget class="QPushButton" name="unblockBtn">
+      <property name="text">
+       <string>Unblock All IPs</string>
+      </property>
+     </widget>
+    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menuBar">
@@ -194,6 +210,18 @@
   <widget class="QStatusBar" name="statusBar"/>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <tabstops>
+  <tabstop>logFile</tabstop>
+  <tabstop>permittedAttempts</tabstop>
+  <tabstop>resetHrs</tabstop>
+  <tabstop>resetMins</tabstop>
+  <tabstop>blockHrs</tabstop>
+  <tabstop>blockMins</tabstop>
+  <tabstop>infoTable</tabstop>
+  <tabstop>startBtn</tabstop>
+  <tabstop>stopBtn</tabstop>
+  <tabstop>unblockBtn</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

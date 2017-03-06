@@ -3,6 +3,9 @@
 
 #include <QObject>
 #include <QString>
+#include <QTextStream>
+#include <QFile>
+#include <QFileInfo>
 #include <QDebug>
 
 class LogMonitor : public QObject
@@ -10,14 +13,17 @@ class LogMonitor : public QObject
     Q_OBJECT
 
 public:
-    LogMonitor(QString logFile, QString attempts, QString resetHrs, QString resetMins, QString blockHr, QString blockMin);
+    LogMonitor(QString path, QString attempts, QString resetHrs, QString resetMins, QString blockHr, QString blockMin);
     ~LogMonitor();
 
     QString file;
 
 public slots:
 
-    void handleChange(const QString &str);
+    void handleChange(const QString &path);
+
+private slots:
+    void parseChanges(const QString &str);
 
 private:
 
@@ -26,6 +32,11 @@ private:
     int attemptResetMin;
     int blockHr;
     int blockMin;
+
+    QFileInfo oldFileInfo;
+    QFile logFile;
+
+    QTextStream *ts;
 };
 
 #endif // LOGMONITOR_H
