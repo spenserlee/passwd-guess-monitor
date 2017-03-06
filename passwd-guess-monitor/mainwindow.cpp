@@ -20,12 +20,10 @@ void MainWindow::initUi()
 
     QStringList logFiles;
 
-    logFiles << "/var/log/auth.log";
-    logFiles << "/var/log/secure";
+    logFiles << "/var/log/auth.log";    // ubuntu
+    logFiles << "/var/log/secure";      // fedora
 
     ui->logFile->addItems(logFiles);
-
-
 }
 
 void MainWindow::on_unblockBtn_clicked()
@@ -33,16 +31,28 @@ void MainWindow::on_unblockBtn_clicked()
     // execute iptable command to remove user chain for ip blocks
 }
 
-void MainWindow::on_registerBtn_clicked()
+void MainWindow::on_startBtn_clicked()
 {
-    // thread to monitor file in /opt/passwd-guess-monitor/activity.log
+    QProcess *logMonitor = new QProcess();
 
-    // get user settings
+    QString currentDir(QDir::currentPath());
 
-    // execute script
+    QString logFile     = ui->logFile->currentText() + " ";
+    QString attempts    = ui->permittedAttempts->text() + " ";
+    QString resetHrs    = ui->resetHrs->text().split(" ")[0] + " ";
+    QString resetMins   = ui->resetMins->text().split(" ")[0] + " ";
+    QString blockHr     = ui->blockHrs->text().split(" ")[0] + " ";
+    QString blockMin    = ui->blockMins->text().split(" ")[0] + " ";
 
-    // add script to crontab
+    QString args = logFile + attempts + resetHrs + resetMins + blockHr + blockMin;
 
+    QString command = currentDir + "/log-monitor " + args;
+
+    qDebug() << command;
+
+    logMonitor->startDetached(command);
+
+    delete logMonitor;
 }
 
 void MainWindow::on_resetHrs_valueChanged(int arg1)

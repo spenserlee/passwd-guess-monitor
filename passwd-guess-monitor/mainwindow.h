@@ -2,6 +2,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QDir>
+#include <QProcess>
 #include <QDebug>
 
 namespace Ui {
@@ -22,7 +24,7 @@ private slots:
 
     void on_unblockBtn_clicked();
 
-    void on_registerBtn_clicked();
+    void on_startBtn_clicked();
 
     void on_resetHrs_valueChanged(int arg1);
 
@@ -31,6 +33,7 @@ private slots:
     void on_blockHrs_valueChanged(int arg1);
 
     void on_blockMins_valueChanged(int arg1);
+
 
 private:
     Ui::MainWindow *ui;
