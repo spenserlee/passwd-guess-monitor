@@ -1,7 +1,15 @@
 #ifndef LOGMONITOR_H
 #define LOGMONITOR_H
 
+#define FAILED 0
+#define ACCEPT 1
+#define DISCON 2
+
 #include <QObject>
+#include <QDateTime>
+#include <QRegularExpression>
+#include <QRegularExpressionMatch>
+#include <QRegularExpressionMatchIterator>
 #include <QString>
 #include <QTextStream>
 #include <QFile>
@@ -24,6 +32,7 @@ public slots:
 
 private slots:
     void parseChanges(const QString &str);
+    void updateActivityLog(const QString &str, int type);
 
 private:
 
@@ -37,6 +46,9 @@ private:
     QFile logFile;
 
     QTextStream *ts;
+
+    QRegularExpression sshRe;
+    QRegularExpression ipRe;
 };
 
 #endif // LOGMONITOR_H

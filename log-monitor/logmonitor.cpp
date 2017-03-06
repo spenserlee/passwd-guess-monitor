@@ -21,12 +21,8 @@ LogMonitor::LogMonitor(QString path, QString attempts, QString resetHrs, QString
 
     ts = new QTextStream(&logFile);
 
-//    qDebug() << "file = " << file;
-//    qDebug() << "allowedAttempts = " << allowedAttempts;
-//    qDebug() << "attemptResetHr  = " << attemptResetHr;
-//    qDebug() << "attemptResetMin = " << attemptResetMin;
-//    qDebug() << "blockHr   = " << this->blockHr;
-//    qDebug() << "blockMin  = " << this->blockMin;
+    sshRe = QRegularExpression("sshd.+(?:[\r\n]|$)");
+    ipRe = QRegularExpression("(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])");
 }
 
 LogMonitor::~LogMonitor()
@@ -58,12 +54,60 @@ void LogMonitor::handleChange(const QString &path)
 
 void LogMonitor::parseChanges(const QString &str)
 {
-    qDebug() << str;
-    /*
-      if contains sshd
-        if contains Failed password or Accepted password
-            get time
-            get IP
-            updateActivityLog()
-    */
+    QRegularExpressionMatchIterator i = sshRe.globalMatch(str);
+
+    QRegularExpressionMatch match;
+
+    while (i.hasNext())
+    {
+        match = i.next();
+
+        if (match.hasMatch())
+        {
+            QString matchString = match.captured(0);
+
+            if (matchString.contains("Failed password"))
+            {
+                updateActivityLog(matchString, FAILED);
+            }
+            else if (matchString.contains("Accepted password"))
+            {
+                updateActivityLog(matchString, ACCEPT);
+            }
+            else if (matchString.contains("Disconnected from"))
+            {
+                updateActivityLog(matchString, DISCON);
+            }
+        }
+    }
+}
+
+void LogMonitor::updateActivityLog(const QString &str, int type)
+{
+    QRegularExpressionMatch match = ipRe.match(str);
+    QString status;
+
+    switch(type)
+    {
+    case FAILED:
+        status = "Failed Attempt";
+        break;
+    case ACCEPT:
+        status = "Connected";
+        break;
+    case DISCON:
+        status = "Disconnected";
+        break;
+    }
+
+    if (match.hasMatch())
+    {
+        QString time = QDateTime::currentDateTime().toString("hh:mm:ss ap");
+        QString ip = match.captured(0);
+
+
+        qDebug() << ip;
+        qDebug() << status;
+        qDebug() << time;
+    }
 }
