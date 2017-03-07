@@ -18,7 +18,10 @@ MainWindow::~MainWindow()
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    monitorer->stopWork();
+    if (monitorer->running)
+    {
+        monitorer->stopWork();
+    }
 }
 
 void MainWindow::initUi()
@@ -131,7 +134,10 @@ void MainWindow::on_stopBtn_clicked()
         }
         f.close();
     }
-    monitorer->stopWork();
+    if (monitorer->running)
+    {
+        monitorer->stopWork();
+    }
 }
 
 void MainWindow::createActivityLog()

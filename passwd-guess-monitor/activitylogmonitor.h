@@ -13,6 +13,7 @@ class ActivityLogMonitor : public QObject
 public:
     explicit ActivityLogMonitor(QObject *parent = 0);
     ActivityLogMonitor(QString file);
+    bool running;
 
 public slots:
     void handleChange(const QString &path);
@@ -25,6 +26,7 @@ signals:
 private:
     QString filePath;
     QFile logFile;
+
 };
 
 #endif // ACTIVITYLOGMONITOR_H

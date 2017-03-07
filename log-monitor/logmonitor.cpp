@@ -24,7 +24,9 @@ LogMonitor::LogMonitor(QString path, QString attempts, QString resetHrs, QString
     ts = new QTextStream(&logFile);
 
     sshRe = QRegularExpression("sshd.+(?:[\r\n]|$)");
-    ipRe = QRegularExpression("(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])");
+
+    QString ipRange = "(?:[0-1]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])";
+    ipRe = QRegularExpression(ipRange + "\\." + ipRange + "\\." + ipRange + "\\." + ipRange);
 }
 
 LogMonitor::~LogMonitor()

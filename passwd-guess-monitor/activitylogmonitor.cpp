@@ -8,6 +8,7 @@ ActivityLogMonitor::ActivityLogMonitor(QObject *parent) : QObject(parent)
 ActivityLogMonitor::ActivityLogMonitor(QString file)
 {
     filePath = file;
+    running = true;
 
     logFile.setFileName(filePath);
 }
@@ -34,5 +35,6 @@ void ActivityLogMonitor::handleChange(const QString &path)
 
 void ActivityLogMonitor::stopWork()
 {
+    running = false;
     emit finished();
 }
