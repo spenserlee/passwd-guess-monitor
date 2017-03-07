@@ -7,6 +7,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     initUi();
+    currentDir = QDir::currentPath();
 }
 
 MainWindow::~MainWindow()
@@ -16,7 +17,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-
+    monitorer->stopWork();
 }
 
 void MainWindow::initUi()
@@ -40,8 +41,6 @@ void MainWindow::on_startBtn_clicked()
 {
     QProcess *logMonitor = new QProcess();
 
-    QString currentDir(QDir::currentPath());
-
     QString logFile     = ui->logFile->currentText() + " ";
     QString attempts    = ui->permittedAttempts->text() + " ";
     QString resetHrs    = ui->resetHrs->text().split(" ")[0] + " ";
@@ -53,11 +52,70 @@ void MainWindow::on_startBtn_clicked()
 
     QString command = currentDir + "/log-monitor " + args;
 
-    qDebug() << command;
+    startMonitorer();
 
     logMonitor->startDetached(command);
 
     delete logMonitor;
+}
+
+// TODO: update table on progam launch if activitly log present
+void MainWindow::updateTable(QString data)
+{
+    jsonDoc = QJsonDocument::fromJson(data.toLocal8Bit());
+
+    if (jsonDoc.isNull())
+    {
+        ui->infoTable->clear();
+        return;
+    }
+
+    QJsonObject root = jsonDoc.object();
+    QJsonArray array = root.value("login_attempts").toArray();
+
+    QString ip;
+    QString status;
+    QString program;
+    QString attempts;
+    QString lastAttempt;
+
+    ui->infoTable->setRowCount(array.size());
+
+    for (int i = 0; i < array.size(); i++)
+    {
+        QJsonObject obj = array.at(i).toObject();
+
+        ip          = obj["ip"].toString();
+        status      = obj["status"].toString();
+        program     = obj["program"].toString();
+        attempts    = QString::number(obj["attempts"].toInt());
+        lastAttempt = obj["time"].toString();
+
+        ui->infoTable->setItem(i, 0, new QTableWidgetItem(ip));
+        ui->infoTable->setItem(i, 1, new QTableWidgetItem(status));
+        ui->infoTable->setItem(i, 2, new QTableWidgetItem(program));
+        ui->infoTable->setItem(i, 3, new QTableWidgetItem(attempts));
+        ui->infoTable->setItem(i, 4, new QTableWidgetItem(lastAttempt));
+    }
+
+}
+
+void MainWindow::startMonitorer()
+{
+    QThread *monitorThread;
+
+    monitorThread   = new QThread;
+    monitorer       = new ActivityLogMonitor(currentDir + "/activity.log");
+
+    monitorer->moveToThread(monitorThread);
+
+    connect(monitorer, SIGNAL(finished()), monitorThread, SLOT(quit()));
+    connect(monitorer, SIGNAL(finished()), monitorer, SLOT(deleteLater()));
+    connect(monitorThread, SIGNAL(finished()), monitorThread, SLOT(deleteLater()));
+
+    connect(monitorer, SIGNAL(updatedAttempts(QString)), this, SLOT(updateTable(QString)));
+
+    monitorThread->start();
 }
 
 void MainWindow::on_stopBtn_clicked()
@@ -72,6 +130,7 @@ void MainWindow::on_stopBtn_clicked()
         }
         f.close();
     }
+    monitorer->stopWork();
 }
 
 bool MainWindow::fileExists(QString path)

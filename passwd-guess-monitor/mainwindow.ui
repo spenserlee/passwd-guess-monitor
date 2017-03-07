@@ -160,7 +160,7 @@
       </column>
       <column>
        <property name="text">
-        <string>Last Attempt</string>
+        <string>Last Update</string>
        </property>
       </column>
      </widget>
@@ -203,7 +203,7 @@
      <x>0</x>
      <y>0</y>
      <width>816</width>
-     <height>22</height>
+     <height>25</height>
     </rect>
    </property>
   </widget>

@@ -10,6 +10,11 @@
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
 #include <QRegularExpressionMatchIterator>
+#include <QVariant>
+#include <QJsonDocument>
+#include <QJsonValue>
+#include <QJsonArray>
+#include <QJsonObject>
 #include <QString>
 #include <QTextStream>
 #include <QFile>
@@ -32,6 +37,8 @@ public slots:
 
 private slots:
     void parseChanges(const QString &str);
+    void readActivityLog();
+    void saveActivityLog();
     void updateActivityLog(const QString &str, int type);
 
 private:
@@ -41,6 +48,9 @@ private:
     int attemptResetMin;
     int blockHr;
     int blockMin;
+
+    QFile activityLog;
+    QJsonDocument activityLogJson;
 
     QFileInfo oldFileInfo;
     QFile logFile;

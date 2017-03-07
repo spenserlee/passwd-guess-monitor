@@ -7,8 +7,16 @@
 #include <QCloseEvent>
 #include <QDir>
 #include <QFile>
+#include <QFileSystemWatcher>
 #include <QProcess>
+#include <QThread>
+#include <QJsonDocument>
+#include <QJsonValue>
+#include <QJsonArray>
+#include <QJsonObject>
 #include <QDebug>
+
+#include "activitylogmonitor.h"
 
 namespace Ui {
 class MainWindow;
@@ -23,6 +31,10 @@ public:
     void closeEvent(QCloseEvent *event);
     ~MainWindow();
 
+    void startMonitorer();
+    ActivityLogMonitor *monitorer;
+    QString currentDir;
+
 private slots:
 
     void initUi();
@@ -30,6 +42,8 @@ private slots:
     void on_unblockBtn_clicked();
 
     void on_startBtn_clicked();
+
+    void updateTable(QString data);
 
     void on_resetHrs_valueChanged(int arg1);
 
@@ -45,6 +59,8 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
+
+    QJsonDocument jsonDoc;
 
     int resetHr = 0;
     int resetMin = 0;

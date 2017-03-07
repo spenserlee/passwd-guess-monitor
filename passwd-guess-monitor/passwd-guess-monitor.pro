@@ -25,7 +25,9 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += main.cpp\
         mainwindow.cpp \
+    activitylogmonitor.cpp
 
-HEADERS  += mainwindow.h
+HEADERS  += mainwindow.h \
+    activitylogmonitor.h
 
 FORMS    += mainwindow.ui

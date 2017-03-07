@@ -10,6 +10,8 @@ LogMonitor::LogMonitor(QString path, QString attempts, QString resetHrs, QString
     this->blockHr   = blockHr.toInt();
     this->blockMin  = blockMin.toInt();
 
+    readActivityLog();
+
     oldFileInfo = QFileInfo(file);
     logFile.setFileName(path);
 
@@ -28,6 +30,40 @@ LogMonitor::LogMonitor(QString path, QString attempts, QString resetHrs, QString
 LogMonitor::~LogMonitor()
 {
     delete ts;
+}
+
+void LogMonitor::readActivityLog()
+{
+    activityLog.setFileName("activity.log");
+
+    QFileInfo check_file("activity.log");
+
+    if (check_file.exists() && check_file.isFile()) // if the activity log exists, initialize json document
+    {
+        if (!activityLog.open(QIODevice::ReadOnly))
+        {
+            qDebug() << "failed to open activity log file.";
+            return;
+        }
+
+        QTextStream stream(&activityLog);
+        activityLogJson = QJsonDocument::fromJson(stream.readAll().toLocal8Bit());
+
+        activityLog.close();
+    }
+}
+
+void LogMonitor::saveActivityLog()
+{
+    if (!activityLog.open(QIODevice::WriteOnly | QIODevice::Truncate))
+    {
+        qDebug() << "failed to open activity log file.";
+        return;
+    }
+
+    activityLog.write(activityLogJson.toJson(QJsonDocument::Indented));
+
+    activityLog.close();
 }
 
 void LogMonitor::handleChange(const QString &path)
@@ -105,9 +141,60 @@ void LogMonitor::updateActivityLog(const QString &str, int type)
         QString time = QDateTime::currentDateTime().toString("hh:mm:ss ap");
         QString ip = match.captured(0);
 
+        QJsonObject root = activityLogJson.object();
+        QJsonArray array = root.value("login_attempts").toArray();
 
-        qDebug() << ip;
-        qDebug() << status;
-        qDebug() << time;
+        // check if this IP has attempted login before
+        for (int i = 0; i < array.size(); i++)
+        {
+            QJsonObject obj = array.at(i).toObject();
+
+            if (obj["ip"] == ip)
+            {
+                int attempts = (obj["attempts"].toInt());
+
+                if (type == ACCEPT)
+                {
+                    attempts = 0;
+                }
+                else if (type == FAILED)
+                {
+                    attempts += 1;
+                }
+
+                if (attempts > allowedAttempts)
+                {
+                    // ban ip here
+                    status = "IP Blocked";
+                }
+
+                obj["time"] = time;
+                obj["status"] = status;
+                obj["program"] = "ssh";
+                obj["attempts"] = attempts;
+
+                array.removeAt(i);
+                array.insert(i, obj);
+                root.insert("login_attempts", array);
+                activityLogJson.setObject(root);
+                saveActivityLog();
+                return;
+            }
+        }
+        // attempt from new IP, add entry to activity log
+        QVariantMap map;
+        map.insert("ip", ip);
+        map.insert("time", time);
+        map.insert("status", status);
+        map.insert("program", "ssh");
+        map.insert("attempts", 1);
+
+        QJsonObject obj = QJsonObject::fromVariantMap(map);
+        array.insert(array.end(), obj);
+        root.insert("login_attempts", array);
+        activityLogJson.setObject(root);
+
+        saveActivityLog();
     }
 }
+
