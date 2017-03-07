@@ -8,6 +8,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     initUi();
     currentDir = QDir::currentPath();
+    createActivityLog();
 }
 
 MainWindow::~MainWindow()
@@ -131,6 +132,20 @@ void MainWindow::on_stopBtn_clicked()
         f.close();
     }
     monitorer->stopWork();
+}
+
+void MainWindow::createActivityLog()
+{
+    QString path = currentDir + "/activity.log";
+    if (!fileExists(path))
+    {
+        QFile f(path);
+        if (!f.open(QIODevice::WriteOnly | QIODevice::Text))
+        {
+            qDebug() << "open activity.log failure";
+        }
+        f.close();
+    }
 }
 
 bool MainWindow::fileExists(QString path)

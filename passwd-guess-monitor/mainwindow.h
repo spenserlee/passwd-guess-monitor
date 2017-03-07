@@ -53,6 +53,8 @@ private slots:
 
     void on_blockMins_valueChanged(int arg1);
 
+    void createActivityLog();
+
     bool fileExists(QString path);
 
     void on_stopBtn_clicked();
