@@ -111,6 +111,40 @@
          </property>
         </widget>
        </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="label_5">
+         <property name="text">
+          <string>Daemon Status:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1" colspan="2">
+        <widget class="QLabel" name="daemonStatus">
+         <property name="font">
+          <font>
+           <family>FreeSans</family>
+           <pointsize>16</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="layoutDirection">
+          <enum>Qt::LeftToRight</enum>
+         </property>
+         <property name="autoFillBackground">
+          <bool>false</bool>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QLabel {color : red; }</string>
+         </property>
+         <property name="text">
+          <string>INACTIVE</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
       </layout>
      </widget>
     </item>
@@ -127,7 +161,7 @@
       </property>
      </spacer>
     </item>
-    <item row="2" column="0" colspan="2">
+    <item row="3" column="0" colspan="2">
      <widget class="QTableWidget" name="infoTable">
       <property name="alternatingRowColors">
        <bool>true</bool>
@@ -165,14 +199,14 @@
       </column>
      </widget>
     </item>
-    <item row="4" column="0" colspan="2">
+    <item row="5" column="0" colspan="2">
      <widget class="QPushButton" name="unblockBtn">
       <property name="text">
-       <string>Unblock All IPs</string>
+       <string>Unblock All IPs (Clears History)</string>
       </property>
      </widget>
     </item>
-    <item row="3" column="0" colspan="2">
+    <item row="4" column="0" colspan="2">
      <widget class="QPushButton" name="startStopBtn">
       <property name="autoFillBackground">
        <bool>false</bool>

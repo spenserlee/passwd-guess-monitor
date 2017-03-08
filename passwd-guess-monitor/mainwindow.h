@@ -16,6 +16,7 @@
 #include <QJsonValue>
 #include <QJsonArray>
 #include <QJsonObject>
+#include <QDateTime>
 #include <QDebug>
 
 #include <unistd.h>

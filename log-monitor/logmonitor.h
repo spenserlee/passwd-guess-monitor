@@ -10,6 +10,7 @@
 #define DISCON 2
 
 #include <QObject>
+#include <QThread>
 #include <QDebug>
 #include <QFile>
 #include <QFileInfo>
@@ -23,6 +24,8 @@
 #include <QJsonValue>
 #include <QJsonArray>
 #include <QJsonObject>
+
+#include "ipblockmonitor.h"
 
 class LogMonitor : public QObject
 {
@@ -42,10 +45,12 @@ private slots:
     void saveSettings();
     void readActivityLog();
     void saveActivityLog();
+    void startBlockMonitor();
     void parseChanges(const QString &str);
     void updateActivityLog(const QString &str, int type);
 
 private:
+    IpBlockMonitor *ipBlockMonitor;
 
     QString file;
 

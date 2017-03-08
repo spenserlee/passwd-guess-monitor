@@ -22,6 +22,8 @@ LogMonitor::LogMonitor(QString path, QString attempts, QString resetHrs, QString
         return;
     }
 
+    startBlockMonitor();
+
     ts = new QTextStream(&logFile);
 
     sshRe = QRegularExpression("sshd.+(?:[\r\n]|$)");
@@ -94,6 +96,25 @@ void LogMonitor::saveActivityLog()
     activityLog.write(activityLogJson.toJson(QJsonDocument::Indented));
 
     activityLog.close();
+}
+
+void LogMonitor::startBlockMonitor()
+{
+    QThread *monitorThread;
+
+    monitorThread   = new QThread(this);
+    ipBlockMonitor  = new IpBlockMonitor(&activityLogJson, allowedAttempts, attemptResetHr, attemptResetMin, blockHr, blockMin);
+
+    ipBlockMonitor->moveToThread(monitorThread);
+
+    connect(ipBlockMonitor, SIGNAL(finished()), monitorThread, SLOT(quit()));
+    connect(ipBlockMonitor, SIGNAL(finished()), ipBlockMonitor, SLOT(deleteLater()));
+    connect(monitorThread, SIGNAL(finished()), monitorThread, SLOT(deleteLater()));
+
+    connect(ipBlockMonitor, SIGNAL(saveActivityLog()), this, SLOT(saveActivityLog()));
+    connect(monitorThread, SIGNAL(started()), ipBlockMonitor, SLOT(monitor()));
+
+    monitorThread->start();
 }
 
 void LogMonitor::emptyActivityLog()
@@ -183,7 +204,7 @@ void LogMonitor::updateActivityLog(const QString &str, int type)
 
     if (match.hasMatch())
     {
-        QString time = QDateTime::currentDateTime().toString("hh:mm:ss ap");
+        QString time = QString::number(QDateTime::currentSecsSinceEpoch());
         QString ip = match.captured(0);
 
         QJsonObject root = activityLogJson.object();
@@ -211,6 +232,8 @@ void LogMonitor::updateActivityLog(const QString &str, int type)
                 {
                     // ban ip here
                     status = "IP Blocked";
+
+                    // iptables block ip
                 }
 
                 obj["time"] = time;

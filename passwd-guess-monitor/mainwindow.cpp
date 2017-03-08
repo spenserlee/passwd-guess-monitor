@@ -23,6 +23,26 @@ void MainWindow::closeEvent(QCloseEvent *event)
     {
         monitorer->stopWork();
     }
+
+    if (running)
+    {
+        QMessageBox::StandardButton reply;
+        reply = QMessageBox::question(this, "Stop Daemon?", "Would you like to kill the daemon?", QMessageBox::Yes | QMessageBox::No);
+
+        if (reply == QMessageBox::Yes)
+        {
+            if (fileExists(LOG_MONITOR_LOGFILE))
+            {
+                QFile f(LOG_MONITOR_LOGFILE);
+                if (f.open(QIODevice::ReadOnly | QIODevice::Text))
+                {
+                    int oldPid = f.readAll().toInt();
+                    QProcess::execute(QString("kill " + QString::number(oldPid)));
+                }
+                f.close();
+            }
+        }
+    }
 }
 
 void MainWindow::initUi()
@@ -103,11 +123,15 @@ void MainWindow::toggleUi()
     {
         ui->startStopBtn->setText("Stop Log Monitor Daemon");
         ui->startStopBtn->setStyleSheet("QPushButton { background-color: rgb(204, 0, 0); color: white;}");
+        ui->daemonStatus->setText("ACTIVE");
+        ui->daemonStatus->setStyleSheet("QLabel {color : green; }");
     }
     else
     {
         ui->startStopBtn->setText("Start Log Monitor Daemon");
         ui->startStopBtn->setStyleSheet("QPushButton { background-color: rgb(78, 154, 6); color: black;}");
+        ui->daemonStatus->setText("INACTIVE");
+        ui->daemonStatus->setStyleSheet("QLabel {color : red; }");
     }
 }
 
@@ -196,7 +220,9 @@ void MainWindow::updateTable(QString data)
     QString status;
     QString program;
     QString attempts;
-    QString lastAttempt;
+    QString formattedTime;
+    QDateTime time;
+    qint64 t;
 
     ui->infoTable->setRowCount(array.size());
 
@@ -208,27 +234,42 @@ void MainWindow::updateTable(QString data)
         status      = obj["status"].toString();
         program     = obj["program"].toString();
         attempts    = QString::number(obj["attempts"].toInt());
-        lastAttempt = obj["time"].toString();
+        t           = obj["time"].toString().toLongLong();
+
+        time.setSecsSinceEpoch(t);
+        formattedTime = time.toString("hh:mm:ss ap");
 
         QColor c;
         if (status == "Failed Attempt")
         {
-            c = QColor::fromRgb(255, 109, 109);
+            c = QColor::fromRgb(237, 135, 135); // light red
         }
         else if (status == "Connected")
         {
-            c = QColor::fromRgb(147, 255, 114);
+            c = QColor::fromRgb(86, 232, 41);   // green
         }
         else if (status == "Disconnected")
         {
-            c = QColor::fromRgb(105,105,105);
+            c = QColor::fromRgb(212, 255, 163); // light green
+        }
+        else if (status == "Attempts Reset")
+        {
+            c = QColor::fromRgb(255, 250, 124); // light yellow
+        }
+        else if (status == "IP Blocked")
+        {
+            c = QColor::fromRgb(255, 7, 7);     // red
+        }
+        else if (status == "IP Block Expired")
+        {
+            c = QColor::fromRgb(255, 184, 33);   // orange
         }
 
         ui->infoTable->setItem(i, 0, new QTableWidgetItem(ip));
         ui->infoTable->setItem(i, 1, new QTableWidgetItem(status));
         ui->infoTable->setItem(i, 2, new QTableWidgetItem(program));
         ui->infoTable->setItem(i, 3, new QTableWidgetItem(attempts));
-        ui->infoTable->setItem(i, 4, new QTableWidgetItem(lastAttempt));
+        ui->infoTable->setItem(i, 4, new QTableWidgetItem(formattedTime));
 
         // set row color
         for (int j = 0; j < 5; j++)
