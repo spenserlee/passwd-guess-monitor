@@ -9,6 +9,7 @@ MainWindow::MainWindow(QWidget *parent) :
     initUi();
     currentDir = QDir::currentPath();
     createActivityLog();
+    attachToDaemon();
 }
 
 MainWindow::~MainWindow()
@@ -36,23 +37,113 @@ void MainWindow::initUi()
     ui->logFile->addItems(logFiles);
 }
 
+void MainWindow::attachToDaemon()
+{
+    QString path = currentDir + "/log-monitor.settings";
+
+    // if there is a settings file, then the daemon is running
+    if (fileExists(path))
+    {
+        running = true;
+
+        // get current settings, update UI
+        QFile settingsFile("log-monitor.settings");
+        if (!settingsFile.open(QIODevice::ReadOnly))
+        {
+            qDebug() << "failed to open settings file.";
+            return;
+        }
+
+        QTextStream stream(&settingsFile);
+        QJsonDocument doc = QJsonDocument::fromJson(stream.readAll().toLocal8Bit());
+
+        settingsFile.close();
+
+        file            = doc.object()["log_file"].isString();
+        allowedAttempts = doc.object()["allowed_attempts"].toInt();
+        resetHr         = doc.object()["attempt_reset_time_hr"].toInt();
+        resetMin        = doc.object()["attempt_reset_time_min"].toInt();
+        blockHr         = doc.object()["block_time_hr"].toInt();
+        blockMin        = doc.object()["block_time_min"].toInt();
+
+        file == "/var/log/auth.log" ? ui->logFile->setCurrentIndex(1) : ui->logFile->setCurrentIndex(0);
+        ui->permittedAttempts->setValue(allowedAttempts);
+        ui->resetHrs->setValue(resetHr);
+        ui->resetMins->setValue(resetMin);
+        ui->blockHrs->setValue(blockHr);
+        ui->blockMins->setValue(blockMin);
+
+        toggleUi();
+
+        // get the current login attempt activity, update table
+        QFile activityFile(currentDir + "/activity.log");
+
+        if (!activityFile.open(QIODevice::ReadOnly | QIODevice::Text))
+        {
+            qDebug() << "failed to open activity file.";
+            return;
+        }
+
+        QTextStream ts(&activityFile);
+        updateTable(ts.readAll());
+        activityFile.close();
+    }
+}
+
+void MainWindow::toggleUi()
+{
+    ui->logFile->setEnabled(!running);
+    ui->permittedAttempts->setEnabled(!running);
+    ui->resetHrs->setEnabled(!running);
+    ui->resetMins->setEnabled(!running);
+    ui->blockHrs->setEnabled(!running);
+    ui->blockMins->setEnabled(!running);
+
+    if (running)
+    {
+        ui->startStopBtn->setText("Stop Log Monitor Daemon");
+        ui->startStopBtn->setStyleSheet("QPushButton { background-color: rgb(204, 0, 0); color: white;}");
+    }
+    else
+    {
+        ui->startStopBtn->setText("Start Log Monitor Daemon");
+        ui->startStopBtn->setStyleSheet("QPushButton { background-color: rgb(78, 154, 6); color: black;}");
+    }
+}
+
+void MainWindow::on_startStopBtn_clicked()
+{
+    if (running)
+    {
+        stop();
+        return;
+    }
+    start();
+}
+
 void MainWindow::on_unblockBtn_clicked()
 {
     // execute iptable command to remove user chain for ip blocks
 }
 
-void MainWindow::on_startBtn_clicked()
+void MainWindow::start()
 {
     QProcess *logMonitor = new QProcess();
 
-    QString logFile     = ui->logFile->currentText() + " ";
+    QString logFile     = ui->logFile->currentText();
     QString attempts    = ui->permittedAttempts->text() + " ";
     QString resetHrs    = ui->resetHrs->text().split(" ")[0] + " ";
     QString resetMins   = ui->resetMins->text().split(" ")[0] + " ";
     QString blockHr     = ui->blockHrs->text().split(" ")[0] + " ";
     QString blockMin    = ui->blockMins->text().split(" ")[0] + " ";
 
-    QString args = logFile + attempts + resetHrs + resetMins + blockHr + blockMin;
+    if (!fileExists(logFile))
+    {
+        QMessageBox::information(this, "Error", QString("Log file \"" + logFile + "\" not found!"));
+        return;
+    }
+
+    QString args = logFile + " " + attempts + resetHrs + resetMins + blockHr + blockMin;
 
     QString command = currentDir + "/log-monitor " + args;
 
@@ -61,6 +152,29 @@ void MainWindow::on_startBtn_clicked()
     logMonitor->startDetached(command);
 
     delete logMonitor;
+
+    running = true;
+
+    toggleUi();
+}
+
+void MainWindow::stop()
+{
+    if (fileExists(LOG_MONITOR_LOGFILE))
+    {
+        QFile f(LOG_MONITOR_LOGFILE);
+        if (f.open(QIODevice::ReadOnly | QIODevice::Text))
+        {
+            int oldPid = f.readAll().toInt();
+            QProcess::execute(QString("kill " + QString::number(oldPid)));
+        }
+        f.close();
+    }
+
+    ui->infoTable->clearContents();
+    ui->infoTable->setRowCount(0);
+    running = false;
+    toggleUi();
 }
 
 // TODO: update table on progam launch if activitly log present
@@ -68,9 +182,10 @@ void MainWindow::updateTable(QString data)
 {
     jsonDoc = QJsonDocument::fromJson(data.toLocal8Bit());
 
-    if (jsonDoc.isNull())
+    if (jsonDoc.isEmpty() || jsonDoc.isNull())
     {
-        ui->infoTable->clear();
+        ui->infoTable->clearContents();
+        ui->infoTable->setRowCount(0);
         return;
     }
 
@@ -95,13 +210,32 @@ void MainWindow::updateTable(QString data)
         attempts    = QString::number(obj["attempts"].toInt());
         lastAttempt = obj["time"].toString();
 
+        QColor c;
+        if (status == "Failed Attempt")
+        {
+            c = QColor::fromRgb(255, 109, 109);
+        }
+        else if (status == "Connected")
+        {
+            c = QColor::fromRgb(147, 255, 114);
+        }
+        else if (status == "Disconnected")
+        {
+            c = QColor::fromRgb(105,105,105);
+        }
+
         ui->infoTable->setItem(i, 0, new QTableWidgetItem(ip));
         ui->infoTable->setItem(i, 1, new QTableWidgetItem(status));
         ui->infoTable->setItem(i, 2, new QTableWidgetItem(program));
         ui->infoTable->setItem(i, 3, new QTableWidgetItem(attempts));
         ui->infoTable->setItem(i, 4, new QTableWidgetItem(lastAttempt));
-    }
 
+        // set row color
+        for (int j = 0; j < 5; j++)
+        {
+            ui->infoTable->item(i, j)->setBackgroundColor(c);
+        }
+    }
 }
 
 void MainWindow::startMonitorer()
@@ -120,24 +254,6 @@ void MainWindow::startMonitorer()
     connect(monitorer, SIGNAL(updatedAttempts(QString)), this, SLOT(updateTable(QString)));
 
     monitorThread->start();
-}
-
-void MainWindow::on_stopBtn_clicked()
-{
-    if (fileExists(LOG_MONITOR_LOGFILE))
-    {
-        QFile f(LOG_MONITOR_LOGFILE);
-        if (f.open(QIODevice::ReadOnly | QIODevice::Text))
-        {
-            int oldPid = f.readAll().toInt();
-            QProcess::execute(QString("kill " + QString::number(oldPid)));
-        }
-        f.close();
-    }
-    if (monitorer->running)
-    {
-        monitorer->stopWork();
-    }
 }
 
 void MainWindow::createActivityLog()

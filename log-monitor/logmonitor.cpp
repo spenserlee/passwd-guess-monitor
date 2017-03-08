@@ -10,6 +10,7 @@ LogMonitor::LogMonitor(QString path, QString attempts, QString resetHrs, QString
     this->blockHr   = blockHr.toInt();
     this->blockMin  = blockMin.toInt();
 
+    saveSettings();
     readActivityLog();
 
     oldFileInfo = QFileInfo(file);
@@ -34,11 +35,38 @@ LogMonitor::~LogMonitor()
     delete ts;
 }
 
+void LogMonitor::saveSettings()
+{
+    QVariantMap map;
+    map.insert("log_file", file);
+    map.insert("allowed_attempts", allowedAttempts);
+    map.insert("attempt_reset_time_hr", attemptResetHr);
+    map.insert("attempt_reset_time_min", attemptResetMin);
+    map.insert("block_time_hr", blockHr);
+    map.insert("block_time_min", blockMin);
+
+    QJsonObject obj = QJsonObject::fromVariantMap(map);
+
+    QJsonDocument settings(obj);
+
+    QFile settingsFile(SETTINGS_FILE);
+
+    if (!settingsFile.open(QIODevice::WriteOnly | QIODevice::Truncate))
+    {
+        qDebug() << "failed to open activity log file.";
+        return;
+    }
+
+    settingsFile.write(settings.toJson(QJsonDocument::Indented));
+
+    settingsFile.close();
+}
+
 void LogMonitor::readActivityLog()
 {
-    activityLog.setFileName("activity.log");
+    activityLog.setFileName(ATTEMPTS_FILE);
 
-    QFileInfo check_file("activity.log");
+    QFileInfo check_file(ATTEMPTS_FILE);
 
     if (check_file.exists() && check_file.isFile()) // if the activity log exists, initialize json document
     {
@@ -62,6 +90,21 @@ void LogMonitor::saveActivityLog()
         qDebug() << "failed to open activity log file.";
         return;
     }
+
+    activityLog.write(activityLogJson.toJson(QJsonDocument::Indented));
+
+    activityLog.close();
+}
+
+void LogMonitor::emptyActivityLog()
+{
+    if (!activityLog.open(QIODevice::WriteOnly | QIODevice::Truncate))
+    {
+        qDebug() << "failed to open activity log file.";
+        return;
+    }
+
+    activityLogJson = QJsonDocument();  // sets to null
 
     activityLog.write(activityLogJson.toJson(QJsonDocument::Indented));
 

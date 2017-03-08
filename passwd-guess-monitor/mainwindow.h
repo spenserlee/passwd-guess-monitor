@@ -1,20 +1,24 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#define LOG_MONITOR_LOGFILE "log-monitor.log"
+#define LOG_MONITOR_LOGFILE "log-monitor.pid"
 
 #include <QMainWindow>
+#include <QMessageBox>
 #include <QCloseEvent>
 #include <QDir>
 #include <QFile>
 #include <QFileSystemWatcher>
 #include <QProcess>
 #include <QThread>
+#include <QTextStream>
 #include <QJsonDocument>
 #include <QJsonValue>
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QDebug>
+
+#include <unistd.h>
 
 #include "activitylogmonitor.h"
 
@@ -39,9 +43,17 @@ private slots:
 
     void initUi();
 
-    void on_unblockBtn_clicked();
+    void attachToDaemon();
 
-    void on_startBtn_clicked();
+    void toggleUi();
+
+    void on_startStopBtn_clicked();
+
+    void start();
+
+    void stop();
+
+    void on_unblockBtn_clicked();
 
     void updateTable(QString data);
 
@@ -57,13 +69,17 @@ private slots:
 
     bool fileExists(QString path);
 
-    void on_stopBtn_clicked();
-
 private:
     Ui::MainWindow *ui;
 
+    QFileSystemWatcher *watcher;
+
     QJsonDocument jsonDoc;
 
+    bool running = false;
+
+    QString file;
+    int allowedAttempts = 0;
     int resetHr = 0;
     int resetMin = 0;
     int blockHr = 0;

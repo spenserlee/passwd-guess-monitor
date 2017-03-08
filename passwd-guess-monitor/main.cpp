@@ -8,6 +8,7 @@ int main(int argc, char *argv[])
     MainWindow w;
     w.show();
 
+    // may not be necessary - just create private pionter to a watcher in MainWindow...
     w.startMonitorer();  // create activity log monitor thread
 
     QFileSystemWatcher watcher;

@@ -1,11 +1,19 @@
 #ifndef LOGMONITOR_H
 #define LOGMONITOR_H
 
+#define ATTEMPTS_FILE "activity.log"
+#define SETTINGS_FILE "log-monitor.settings"
+#define PID_FILE "log-monitor.pid"
+
 #define FAILED 0
 #define ACCEPT 1
 #define DISCON 2
 
 #include <QObject>
+#include <QDebug>
+#include <QFile>
+#include <QFileInfo>
+#include <QTextStream>
 #include <QDateTime>
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
@@ -15,11 +23,6 @@
 #include <QJsonValue>
 #include <QJsonArray>
 #include <QJsonObject>
-#include <QString>
-#include <QTextStream>
-#include <QFile>
-#include <QFileInfo>
-#include <QDebug>
 
 class LogMonitor : public QObject
 {
@@ -29,19 +32,22 @@ public:
     LogMonitor(QString path, QString attempts, QString resetHrs, QString resetMins, QString blockHr, QString blockMin);
     ~LogMonitor();
 
-    QString file;
 
 public slots:
 
     void handleChange(const QString &path);
+    void emptyActivityLog();
 
 private slots:
-    void parseChanges(const QString &str);
+    void saveSettings();
     void readActivityLog();
     void saveActivityLog();
+    void parseChanges(const QString &str);
     void updateActivityLog(const QString &str, int type);
 
 private:
+
+    QString file;
 
     int allowedAttempts;
     int attemptResetHr;

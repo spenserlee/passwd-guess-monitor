@@ -165,8 +165,15 @@
       </column>
      </widget>
     </item>
-    <item row="3" column="0">
-     <widget class="QPushButton" name="startBtn">
+    <item row="4" column="0" colspan="2">
+     <widget class="QPushButton" name="unblockBtn">
+      <property name="text">
+       <string>Unblock All IPs</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="0" colspan="2">
+     <widget class="QPushButton" name="startStopBtn">
       <property name="autoFillBackground">
        <bool>false</bool>
       </property>
@@ -178,23 +185,6 @@
       </property>
      </widget>
     </item>
-    <item row="3" column="1">
-     <widget class="QPushButton" name="stopBtn">
-      <property name="styleSheet">
-       <string notr="true">QPushButton { background-color: rgb(204, 0, 0); color: white;}</string>
-      </property>
-      <property name="text">
-       <string>Stop Log Monitor Daemon</string>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="0" colspan="2">
-     <widget class="QPushButton" name="unblockBtn">
-      <property name="text">
-       <string>Unblock All IPs</string>
-      </property>
-     </widget>
-    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menuBar">
@@ -203,7 +193,7 @@
      <x>0</x>
      <y>0</y>
      <width>816</width>
-     <height>25</height>
+     <height>22</height>
     </rect>
    </property>
   </widget>
@@ -218,8 +208,7 @@
   <tabstop>blockHrs</tabstop>
   <tabstop>blockMins</tabstop>
   <tabstop>infoTable</tabstop>
-  <tabstop>startBtn</tabstop>
-  <tabstop>stopBtn</tabstop>
+  <tabstop>startStopBtn</tabstop>
   <tabstop>unblockBtn</tabstop>
  </tabstops>
  <resources/>
