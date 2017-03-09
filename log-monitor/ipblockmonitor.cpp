@@ -74,7 +74,7 @@ void IpBlockMonitor::monitor()
                     changesMade = true;
 
                     // iptables unblock
-                    system(QString("iptables -D ip_block -s " +  obj["ip"].toString() + " -j ip_block").toUtf8().constData());
+                    system(QString("iptables -D ip_block -s " +  obj["ip"].toString() + " -j DROP").toUtf8().constData());
                 }
             }
             if (changesMade)

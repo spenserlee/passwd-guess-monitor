@@ -61,6 +61,7 @@ void signalHandler(int signum)
     pidFile.remove();
     settingsFile.remove();
     lm->emptyActivityLog();
+    QProcess::execute("iptables -F ip_block");
     exit(signum);
 }
 

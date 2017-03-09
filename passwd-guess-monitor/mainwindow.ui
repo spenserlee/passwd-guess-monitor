@@ -58,7 +58,7 @@
        <item row="1" column="1" colspan="2">
         <widget class="QSpinBox" name="permittedAttempts">
          <property name="value">
-          <number>3</number>
+          <number>2</number>
          </property>
         </widget>
        </item>
@@ -74,7 +74,7 @@
           <number>60</number>
          </property>
          <property name="value">
-          <number>5</number>
+          <number>1</number>
          </property>
         </widget>
        </item>
