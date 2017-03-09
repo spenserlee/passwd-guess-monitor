@@ -4,6 +4,7 @@
 #include <QTextStream>
 #include <QFileInfo>
 #include <QFile>
+#include <QDir>
 #include <QDebug>
 
 #include <csignal>
@@ -15,6 +16,7 @@ bool fileExists(QString path);
 void closeOtherDaemons();
 
 LogMonitor *lm;
+QString currentPath;
 
 int main(int argc, char *argv[])
 {
@@ -25,6 +27,7 @@ int main(int argc, char *argv[])
 
     QCoreApplication a(argc, argv);
 
+    currentPath = QCoreApplication::applicationDirPath() + "/";
     closeOtherDaemons();
 
     QStringList args = a.arguments();
@@ -40,7 +43,7 @@ int main(int argc, char *argv[])
     if (!watcher.addPath(args.at(1)))
     {
         qDebug() << "failed to add watch to " << args.at(1) << ". exiting.";
-        QFile pidFile(PID_FILE);
+        QFile pidFile(currentPath + PID_FILE);
         pidFile.remove();   // sometimes fails to actually remove file
         return -2;
     }
@@ -56,8 +59,8 @@ int main(int argc, char *argv[])
 
 void signalHandler(int signum)
 {
-    QFile pidFile(PID_FILE);
-    QFile settingsFile(SETTINGS_FILE);
+    QFile pidFile(currentPath + PID_FILE);
+    QFile settingsFile(currentPath + SETTINGS_FILE);
     pidFile.remove();
     settingsFile.remove();
     lm->emptyActivityLog();
@@ -75,9 +78,9 @@ bool fileExists(QString path)
 // TODO: consider switching to using a mutex rather than a pid file
 void closeOtherDaemons()
 {
-    QFile f(PID_FILE);
+    QFile f(currentPath + PID_FILE);
 
-    if (fileExists(PID_FILE))
+    if (fileExists(currentPath + PID_FILE))
     {
         if (f.open(QIODevice::ReadOnly | QIODevice::Text))
         {

@@ -9,6 +9,7 @@
 #define ACCEPT 1
 #define DISCON 2
 
+#include <QCoreApplication>
 #include <QObject>
 #include <QProcess>
 #include <QThread>
@@ -62,6 +63,8 @@ private:
     int attemptResetMin;
     int blockHr;
     int blockMin;
+
+    QString currentPath;
 
     QFile activityLog;
     QJsonDocument activityLogJson;

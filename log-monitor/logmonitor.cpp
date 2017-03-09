@@ -10,6 +10,8 @@ LogMonitor::LogMonitor(QString path, QString attempts, QString resetHrs, QString
     this->blockHr   = blockHr.toInt();
     this->blockMin  = blockMin.toInt();
 
+    currentPath = QCoreApplication::applicationDirPath() + "/";
+
     saveSettings();
     readActivityLog();
 
@@ -52,7 +54,7 @@ void LogMonitor::saveSettings()
 
     QJsonDocument settings(obj);
 
-    QFile settingsFile(SETTINGS_FILE);
+    QFile settingsFile(currentPath + SETTINGS_FILE);
 
     if (!settingsFile.open(QIODevice::WriteOnly | QIODevice::Truncate))
     {
@@ -67,9 +69,9 @@ void LogMonitor::saveSettings()
 
 void LogMonitor::readActivityLog()
 {
-    activityLog.setFileName(ATTEMPTS_FILE);
+    activityLog.setFileName(currentPath + ATTEMPTS_FILE);
 
-    QFileInfo check_file(ATTEMPTS_FILE);
+    QFileInfo check_file(currentPath + ATTEMPTS_FILE);
 
     if (check_file.exists() && check_file.isFile()) // if the activity log exists, initialize json document
     {
