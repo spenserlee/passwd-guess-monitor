@@ -23,6 +23,7 @@ LogMonitor::LogMonitor(QString path, QString attempts, QString resetHrs, QString
     }
 
     startBlockMonitor();
+    setIptablesUserChain();
 
     ts = new QTextStream(&logFile);
 
@@ -85,6 +86,14 @@ void LogMonitor::readActivityLog()
     }
 }
 
+void LogMonitor::checkForUnbanState()
+{
+    if (activityLog.size() == 0)
+    {
+        activityLogJson = QJsonDocument();  // sets to null
+    }
+}
+
 void LogMonitor::saveActivityLog()
 {
     if (!activityLog.open(QIODevice::WriteOnly | QIODevice::Truncate))
@@ -117,6 +126,18 @@ void LogMonitor::startBlockMonitor()
     monitorThread->start();
 }
 
+void LogMonitor::setIptablesUserChain()
+{
+    // create user chain
+    QProcess::execute("iptables -N ip_block");
+
+    // if it is not in the input chain already, add it
+    if (QProcess::execute("iptables -C INPUT -j ip_block") == 1)
+    {
+        QProcess::execute("iptables -I INPUT -j ip_block");
+    }
+}
+
 void LogMonitor::emptyActivityLog()
 {
     if (!activityLog.open(QIODevice::WriteOnly | QIODevice::Truncate))
@@ -136,8 +157,12 @@ void LogMonitor::handleChange(const QString &path)
 {
     QFileInfo newFileInfo(path);
 
+    // gui set to unblock all IPs
+
+    int s = newFileInfo.size();
+
     if (newFileInfo.size() != oldFileInfo.size())   // file has changed
-    {
+    {   
         int bytesToRead = newFileInfo.size() - oldFileInfo.size();
 
         if (!logFile.seek(logFile.size() - bytesToRead))
@@ -166,6 +191,7 @@ void LogMonitor::parseChanges(const QString &str)
 
         if (match.hasMatch())
         {
+            checkForUnbanState();
             QString matchString = match.captured(0);
 
             if (matchString.contains("Failed password"))
@@ -234,6 +260,7 @@ void LogMonitor::updateActivityLog(const QString &str, int type)
                     status = "IP Blocked";
 
                     // iptables block ip
+                    system(QString("iptables -A ip_block -s " +  ip + " -j DROP").toUtf8().constData());
                 }
 
                 obj["time"] = time;

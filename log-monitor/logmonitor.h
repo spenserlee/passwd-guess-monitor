@@ -10,6 +10,7 @@
 #define DISCON 2
 
 #include <QObject>
+#include <QProcess>
 #include <QThread>
 #include <QDebug>
 #include <QFile>
@@ -44,8 +45,10 @@ public slots:
 private slots:
     void saveSettings();
     void readActivityLog();
+    void checkForUnbanState();
     void saveActivityLog();
     void startBlockMonitor();
+    void setIptablesUserChain();
     void parseChanges(const QString &str);
     void updateActivityLog(const QString &str, int type);
 

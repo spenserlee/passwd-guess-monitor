@@ -147,7 +147,23 @@ void MainWindow::on_startStopBtn_clicked()
 
 void MainWindow::on_unblockBtn_clicked()
 {
+    // empty the activity log
+    QString path = currentDir + "/activity.log";
+
+    QFile activityLog(path);
+    if (!activityLog.open(QIODevice::WriteOnly | QIODevice::Truncate))
+    {
+        qDebug() << "failed to open activity log file.";
+        return;
+    }
+
+    QJsonDocument jd = QJsonDocument();  // sets to null
+
+    activityLog.write(jd.toJson(QJsonDocument::Indented));
+    activityLog.close();
+
     // execute iptable command to remove user chain for ip blocks
+    QProcess::execute("iptables -F ip_block");
 }
 
 void MainWindow::start()
