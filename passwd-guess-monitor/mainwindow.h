@@ -4,6 +4,7 @@
 #define LOG_MONITOR_LOGFILE "log-monitor.pid"
 
 #include <QMainWindow>
+#include <QCoreApplication>
 #include <QMessageBox>
 #include <QCloseEvent>
 #include <QDir>

@@ -7,7 +7,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     initUi();
-    currentDir = QDir::currentPath();
+    currentDir = QCoreApplication::applicationDirPath();
     createActivityLog();
     attachToDaemon();
 }
