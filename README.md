@@ -45,7 +45,7 @@ For example:
 Will monitor the auth.log file and allow 3 invalid login attempts before blocking that host for 5 minutes. It will reset the attempt counter after 1 minute between invalid attempts.
 
 ## Todo
- - Allow for independent running of the GUI application and daemon
+ - Allow for independent running location of the GUI application and daemon
  - Add checks for programs other than SSH
  - Use a real PID file in /var/run/
  - Combine applications into one Qt project or even a single program with a GUI flag
